@@ -6,17 +6,17 @@ var dateTime = require('node-datetime');
 
 // test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getTopRecPointsToUser) good
 
-router.post('/getTopRecPointsToUser', (req, res) => {
+router.post('/getTopRecPointsToUser/', (req, res) => {
 
-    var userName;
+    let userName;
 
-    jwt.verify(req.token,'secretkey',(err, authData)=>{
+    jwt.verify(req.token,'WeAreAllIronMen',(err, authData)=>{
         if(err){
             res.sendStatus(403);
         }
         else{
-            var strUser = authData;
-            result = strUser.user["Username"];
+            let strUser = authData;
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -26,14 +26,7 @@ router.post('/getTopRecPointsToUser', (req, res) => {
             if(err)
                 res.status(400).json({message: err.message});
             else{
-                pNameA =  response[0].PointName;
-                ImageA = response[0].Image;
-                pNameB =  response[1].PointName;
-                ImageB = response[1].Image;
-
-                res.status(200).json(
-                    {firstName: pNameA, firstImage: ImageA, secondName: pNameB, secondImage: ImageB}
-                );
+                res.status(200).json(response);
             }
         })
         .catch(function(err) {
@@ -53,7 +46,7 @@ router.post('/getLastFavoritsPointsToUser', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -93,7 +86,7 @@ router.post('/insertToFavorits', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -126,7 +119,7 @@ router.delete('/deleteFromFavorits', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -184,7 +177,7 @@ router.post('/getFavoritePoints', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -217,7 +210,7 @@ router.post('/counterOfFavoritePoints', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -250,7 +243,7 @@ router.post('/rateForPoint', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -297,7 +290,7 @@ router.post('/reviewForPoint', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -330,7 +323,7 @@ router.post('/getFavoritePointSorted', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -370,7 +363,7 @@ router.put('/updateUserFavoritList', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });
@@ -412,7 +405,7 @@ router.post('/getUserOrderFavoritList', (req, res) => {
         }
         else{
             var strUser = authData;
-            result = strUser.user["Username"];
+            result = strUser.user["username"];
             userName = result;
         }
     });

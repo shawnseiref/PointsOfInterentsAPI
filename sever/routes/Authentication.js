@@ -23,7 +23,7 @@ router.post('/login', (req, res) => {
                 // console.log(`logged in to '${username}' with password: '${password}'`)
             } else {
                 res.status(500).json({
-                    message: "ERROR: Incorrect Password"
+                    message: "ERROR: Incorrect password"
                 });
             }
 
@@ -48,7 +48,7 @@ router.post('/passwordRetrival', (req, res) => {
         .then((response, err) => {
             if (err) res.status(400).json({message: err.message});
             else res.status(200).json({
-                ThePass: response[0].Password
+                ThePass: response[0].password
             });
         })
         .catch(function (err) {
@@ -57,45 +57,85 @@ router.post('/passwordRetrival', (req, res) => {
 });
 
 
+function strigifyObjectList(objList, arg1) {
+    let res = [];
+    for (let i = 0; i < objList.length; i++) {
+        const categoryName = objList[i]['categoryName'];
+        res.push(`,('${categoryName}','${arg1}')`);
+    }
+    return res;
+}
+
 // test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/register) todo
 router.post('/register', function (req, res) {
     console.log("adding a new user");
     const user = {};
 
-    user.Username = req.body.username;
-    user.Password = req.body.password;
-    user.FirstName = req.body.firstName;
-    user.LastName = req.body.lastName;
-    user.City = req.body.city;
-    user.Country = req.body.country;
-    user.Email = req.body.email;
-    // user.Ansewer1 = req.body.ansewer1;
-    // user.Ansewer2 = req.body.ansewer2;
-    // user.Category1 = req.body.category1;
-    // user.Category2 = req.body.category2;
-    // user.Category3 = req.body.category3;
-    // user.Category4 = req.body.category4;
+    const username = req.body.username;
+    const password = req.body.password;
+    const firstName = req.body.firstName;
+    const lastName = req.body.lastName;
+    const city = req.body.city;
+    const country = req.body.country;
+    const email = req.body.email;
+    const question1 = req.body.question1;
+    const question2 = req.body.question2;
+    const answer1 = req.body.answer1;
+    const answer2 = req.body.answer2;
+    const categories = req.body.categories;
+
+    let categoryStrArr = strigifyObjectList(categories, username);
+    let categoryStr = categoryStrArr[0].substring(1);
+    for (let i = 1; i < categoryStrArr.length; i++) {
+        categoryStr = categoryStr + categoryStrArr[i];
+    }
 
     //users[id]=user;
     // const userStr = JSON.stringify(user);
 
-    DButilsAzure.execQuery(`INSERT INTO dbo.Users VALUES ('${user.Username}', '${user.Password}','${user.FirstName}','${user.LastName}','${user.City}','${user.Country}','${user.Email}')`)
+    DButilsAzure.execQuery(`INSERT INTO users VALUES ('${username}', '${password}','${firstName}','${lastName}','${city}','${country}','${email}')`)
         .then((response, err) => {
             if (err) {
                 res.status(400).json({
                     message: err.message
                 });
-
+                return;
             } else {
-
-                res.status(201).json({message: "New User Added"})
+                if (err) {
+                    res.status(400).json({
+                        message: err.message
+                    });
+                } else {
+                    DButilsAzure.execQuery(`INSERT INTO user_categories (categoryName, username) VALUES ${categoryStr}`)
+                        .then((response, err) => {
+                            if (err) {
+                                res.status(400).json({message: err.message});
+                            } else {
+                                DButilsAzure.execQuery(`INSERT INTO user_qa (username,questionID1,answer1,questionID2,answer2) VALUES ('${username}','${question1}','${answer1}','${question2}','${answer2}')`)
+                                .then((response, err) => {
+                                    if (err) {
+                                        res.status(400).json({message: err.message});
+                                    } else {
+                                        res.status(201).json({message: "New User Added"})
+                                    }
+                                })
+                                .catch(function (err) {
+                                    res.status(400).json({message: err.message});
+                                });
+                            }
+                        })
+                        .catch(function (err) {
+                            res.status(400).json({message: err.message});
+                        });
+                }
             }
         })
+
         .catch(function (err) {
             res.status(400).json({message: err.message});
         });
 
-    // DButilsAzure.execQuery(`INSERT INTO dbo.Users_Questions VALUES ('${user.Username}', '${user.Ansewer1}','${user.Ansewer2}')`)
+    // DButilsAzure.execQuery(`INSERT INTO dbo.Users_Questions VALUES ('${user.username}', '${user.ansewer1}','${user.ansewer2}')`)
     //     .then((response, err) => {
     //         if (err) {
     //             res.status(400).json({
@@ -109,7 +149,7 @@ router.post('/register', function (req, res) {
     //     });
     //
     // // if (user.Category1 !== undefined) {
-    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.Username}', '${user.Category1}')`)
+    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.username}', '${user.Category1}')`)
     // //         .then((response, err) => {
     // //             if (err) {
     // //                 res.status(400).json({
@@ -123,7 +163,7 @@ router.post('/register', function (req, res) {
     // // }
     // //
     // // if (user.Category2 !== undefined) {
-    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.Username}', '${user.Category2}')`)
+    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.username}', '${user.Category2}')`)
     // //         .then((response, err) => {
     // //             if (err) {
     // //                 res.status(400).json({
@@ -141,7 +181,7 @@ router.post('/register', function (req, res) {
     // // }
     // //
     // // if (user.Category3 !== undefined) {
-    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.Username}', '${user.Category3}')`)
+    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.username}', '${user.Category3}')`)
     // //         .then((response, err) => {
     // //             if (err) {
     // //                 res.status(400).json({
@@ -159,7 +199,7 @@ router.post('/register', function (req, res) {
     // // }
     // //
     // // if (user.Category4 !== undefined) {
-    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.Username}', '${user.Category4}')`)
+    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.username}', '${user.Category4}')`)
     // //         .then((response, err) => {
     // //             if (err) {
     // //                 res.status(400).json({
