@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 var DButilsAzure = require('../DButils');
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs) good
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs) todo
 router.get('/getAllPOIs', (req, res) => {
     DButilsAzure.execQuery(`SELECT * FROM poi`)
         .then(async (response, err) => {
@@ -32,7 +32,7 @@ router.get('/getAllPOIs', (req, res) => {
         });
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPOIbyID) good
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPOIbyID) todo
 router.get('/getPOIbyID/:poiID', (req, res) => {
     let poiID = req.params.poiID;
     DButilsAzure.execQuery(`SELECT * FROM poi WHERE poiID = '${poiID}'`)
@@ -56,8 +56,8 @@ router.get('/getPOIbyID/:poiID', (req, res) => {
         });
 });
 
-// test route to make sure everything is working (accessed at GET http://localhost:3000/else/getRandomPOI) good
-router.get('/getRandomPOI/:minimalRank/:POIsToShow', (req, res) => {
+// test route to make sure everything is working (accessed at GET http://localhost:3000/else/getRandomPOI) todo
+router.get('/getRandomPOI/:POIsToShow/:minimalRank', (req, res) => {
     let minimalRank = req.params.minimalRank;
     let pois2show = req.params.POIsToShow;
     DButilsAzure.execQuery(`SELECT * FROM poi WHERE ranking >= '${minimalRank}'`)
@@ -112,79 +112,16 @@ router.get('/getRandomPOI/:minimalRank/:POIsToShow', (req, res) => {
 
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPoint) good
-router.post('/getPoint', (req, res) => {
-
-    PointName = req.body.PointName;
-    var i;
-    let ID;
-    let pName;
-    let Imag;
-    let Vnum;
-    let rate;
-    let des;
-    let rev1;
-    let rev2;
-    DButilsAzure.execQuery(`SELECT * FROM dbo.Points WHERE PointName = '${PointName}'`)
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllReviews) todo
+router.get('/getAllReviews/:poiID', (req, res) => {
+    const poiID = req.params.poiID;
+    DButilsAzure.execQuery(`SELECT * FROM reviews WHERE poiID = '${poiID}'`)
         .then((response, err) => {
             if (err)
                 res.status(400).json({message: err.message});
             else {
-                ID = response[0].PointID;
-                pName = response[0].PointName;
-                Imag = response[0].Image;
-                Vnum = response[0].ViewNum;
-                rate = response[0].Rate;
-                des = response[0].Description;
-            }
 
-        })
-        .catch(function (err) {
-            res.status(400).json({message: err.message});
-        });
-    DButilsAzure.execQuery(`SELECT TOP 2 * FROM dbo.Reviews WHERE PointName = '${PointName}' ORDER BY DateReview DESC`)
-        .then((response, err) => {
-            if (err)
-                res.status(400).json({message: err.message});
-            else {
-                if (response.length > 1) {
-                    onerev = response[0].Review;
-                    oneDateReview = response[0].DateReview;
-                    secondrev = response[1].Review;
-                    secondDateReview = response[1].DateReview;
-                    res.status(200).json({
-                        PointName: pName,
-                        Image: Imag,
-                        NumberOfViews: Vnum,
-                        Rate: rate,
-                        Desrciption: des,
-                        Review1: onerev,
-                        DateOfReview1: oneDateReview,
-                        Review2: secondrev,
-                        DateOfReview2: secondDateReview
-                    });
-                } else if (response.length === 1) {
-                    onerev = response[0].Review;
-                    oneDateReview = response[0].DateReview;
-                    res.status(200).json({
-                        PointName: pName,
-                        Image: Imag,
-                        NumberOfViews: Vnum,
-                        Rate: rate,
-                        Desrciption: des,
-                        Review1: onerev,
-                        DateOfReview1: oneDateReview
-                    });
-                } else if (response.length === 0) {
-                    res.status(200).json({
-                        PointName: pName,
-                        Image: Imag,
-                        NumberOfViews: Vnum,
-                        Rate: rate,
-                        Desrciption: des
-                    });
-                }
-
+                res.status(200).json({Reviews: response});
             }
 
         })
@@ -192,6 +129,107 @@ router.post('/getPoint', (req, res) => {
             res.status(400).json({message: err.message});
         });
 });
+
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getReviews) todo
+router.get('/getReviews/:numOfReviews/:poiID', (req, res) => {
+    const numOfReviews = req.params.numOfReviews;
+    const poiID = req.params.poiID;
+    DButilsAzure.execQuery(`SELECT * FROM reviews WHERE poiID = '${poiID}' ORDER BY date DESC`)
+        .then((response, err) => {
+            if (err)
+                res.status(400).json({message: err.message});
+            else {
+
+                res.status(200).json({Reviews: response.slice(0,numOfReviews)});
+            }
+
+        })
+        .catch(function (err) {
+            res.status(400).json({message: err.message});
+        });
+});
+
+
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPoint) good
+// router.post('/getPoint', (req, res) => {
+//
+//     PointName = req.body.PointName;
+//     var i;
+//     let ID;
+//     let pName;
+//     let Imag;
+//     let Vnum;
+//     let rate;
+//     let des;
+//     let rev1;
+//     let rev2;
+//     DButilsAzure.execQuery(`SELECT * FROM dbo.Points WHERE PointName = '${PointName}'`)
+//         .then((response, err) => {
+//             if (err)
+//                 res.status(400).json({message: err.message});
+//             else {
+//                 ID = response[0].PointID;
+//                 pName = response[0].PointName;
+//                 Imag = response[0].Image;
+//                 Vnum = response[0].ViewNum;
+//                 rate = response[0].Rate;
+//                 des = response[0].Description;
+//             }
+//
+//         })
+//         .catch(function (err) {
+//             res.status(400).json({message: err.message});
+//         });
+//     DButilsAzure.execQuery(`SELECT TOP 2 * FROM dbo.Reviews WHERE PointName = '${PointName}' ORDER BY DateReview DESC`)
+//         .then((response, err) => {
+//             if (err)
+//                 res.status(400).json({message: err.message});
+//             else {
+//                 if (response.length > 1) {
+//                     onerev = response[0].Review;
+//                     oneDateReview = response[0].DateReview;
+//                     secondrev = response[1].Review;
+//                     secondDateReview = response[1].DateReview;
+//                     res.status(200).json({
+//                         PointName: pName,
+//                         Image: Imag,
+//                         NumberOfViews: Vnum,
+//                         Rate: rate,
+//                         Desrciption: des,
+//                         Review1: onerev,
+//                         DateOfReview1: oneDateReview,
+//                         Review2: secondrev,
+//                         DateOfReview2: secondDateReview
+//                     });
+//                 } else if (response.length === 1) {
+//                     onerev = response[0].Review;
+//                     oneDateReview = response[0].DateReview;
+//                     res.status(200).json({
+//                         PointName: pName,
+//                         Image: Imag,
+//                         NumberOfViews: Vnum,
+//                         Rate: rate,
+//                         Desrciption: des,
+//                         Review1: onerev,
+//                         DateOfReview1: oneDateReview
+//                     });
+//                 } else if (response.length === 0) {
+//                     res.status(200).json({
+//                         PointName: pName,
+//                         Image: Imag,
+//                         NumberOfViews: Vnum,
+//                         Rate: rate,
+//                         Desrciption: des
+//                     });
+//                 }
+//
+//             }
+//
+//         })
+//         .catch(function (err) {
+//             res.status(400).json({message: err.message});
+//         });
+// });
 
 
 module.exports = router;

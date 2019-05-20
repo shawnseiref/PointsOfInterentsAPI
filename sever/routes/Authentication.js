@@ -15,7 +15,7 @@ router.post('/login', (req, res) => {
             let passFromTable = response[0].password;
             let user = response[0];
             if (password === passFromTable) {
-                jwt.sign({user}, 'secretkey', (err, token) => {
+                jwt.sign({username: username}, 'WeAreAllIronMen', (err, token) => {
                     res.status(200).json({
                         token
                     });
