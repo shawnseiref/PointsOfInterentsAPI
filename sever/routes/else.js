@@ -5,11 +5,24 @@ var DButilsAzure = require('../DButils');
 // test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs) good
 router.get('/getAllPOIs', (req, res) => {
     DButilsAzure.execQuery(`SELECT * FROM poi`)
-        .then((response, err) => {
+        .then(async (response, err) => {
             if (err)
                 res.status(400).json({message: err.message});
             else {
-                let answer = JSON.stringify(response);
+                let answer = response;
+                for (let i in answer) {
+                    let poiID = await parseInt(response[i]['poiID']);
+                    let views = await parseInt(response[i]['views']) + 1;
+                    response[i]['views'] = views;
+                    DButilsAzure.execQuery(`UPDATE poi SET views = '${views}' where poiID = '${poiID}'`)
+                        .then((response, err) => {
+                            if (err)
+                                res.status(400).json({message: `Error in views`});
+                            else {
+                                res.status(200).json({POI: answer});
+                            }
+                        });
+                }
                 res.status(200).json({POIs: answer});
             }
 
@@ -27,7 +40,8 @@ router.get('/getPOIbyID/:poiID', (req, res) => {
             if (!err) {
                 let answer = response[0];
                 let views = await parseInt(response[0]['views']) + 1;
-                DButilsAzure.execQuery(`UPDATE poi SET views = '${views}'`)
+                response[0]['views'] = views;
+                DButilsAzure.execQuery(`UPDATE poi SET views = '${views}' where poiID = '${poiID}'`)
                     .then((response, err) => {
                         if (err)
                             res.status(400).json({message: `Error in views`});
@@ -43,37 +57,50 @@ router.get('/getPOIbyID/:poiID', (req, res) => {
 });
 
 // test route to make sure everything is working (accessed at GET http://localhost:3000/else/getRandomPOI) good
-router.post('/getRandomPOI/:minimalRank/:POIsToShow', (req, res) => {
-    let threshold = req.body.threshold;
-    DButilsAzure.execQuery(`SELECT dbo.Points.PointName, dbo.Points.Image FROM dbo.Points WHERE Rate >= '${threshold}'`)
-        .then((response, err) => {
+router.get('/getRandomPOI/:minimalRank/:POIsToShow', (req, res) => {
+    let minimalRank = req.params.minimalRank;
+    let pois2show = req.params.POIsToShow;
+    DButilsAzure.execQuery(`SELECT * FROM poi WHERE ranking >= '${minimalRank}'`)
+        .then(async (response, err) => {
             if (err)
                 res.status(400).json({message: err.message});
             else {
                 let numbers = [];
-                let NumOfpoints = [];
-                let ans = {};
+                let poiNums = [];
+                let ans = [];
                 let size = response.length;
-                if (size > 3) {
-                    for (let i = 0; i < 10; i++) {
+                if (size > pois2show) {
+                    for (let i = 0; i < pois2show; i++) {
                         numbers.push(Math.floor(Math.random() * Math.floor(size)));
                     }
                     let index = 0;
                     for (let x in numbers) {
-                        if (NumOfpoints.includes(numbers[x]) !== true && index < 3) {
-                            NumOfpoints.push(numbers[x]);
-                            index = index + 1;
+                        while (poiNums.includes(numbers[x])) {
+                            numbers[x] = (Math.floor(Math.random() * Math.floor(size)));
+                        }
+                        if (index < pois2show) {
+                            poiNums.push(numbers[x]);
+                            index++;
                         }
 
                     }
 
-                    for (let p in NumOfpoints) {
-                        ans[p] = response[NumOfpoints[p]];
+                    let answer = response;
+                    for (let p in poiNums) {
+                        let poiID = await parseInt(answer[poiNums[p]]['poiID']);
+                        let views = await parseInt(answer[poiNums[p]]['views']) + 1;
+                        DButilsAzure.execQuery(`UPDATE poi SET views = '${views}' WHERE poiID = ${poiID}`)
+                            .then((response, err) => {
+                                if (err)
+                                    return res.status(400).json({message: `Error in views`});
+                            });
+                        answer[poiNums[p]]['views'] = views;
+                        ans.push(answer[poiNums[p]]);
                     }
 
-                    res.status(200).json({randomPopular: ans});
+                    res.status(200).json({POIs: ans});
                 } else {
-                    res.status(200).json({randomPopular: response});
+                    res.status(200).json({POIs: response});
                 }
             }
 
