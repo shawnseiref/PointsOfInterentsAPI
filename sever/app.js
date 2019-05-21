@@ -6,6 +6,7 @@ app.use(cors());
 // const Joi = require('joi');
 const bodyParser = require('body-parser');
 const DButilsAzure = require('./DButils');
+const jwt = require('jsonwebtoken');
 const Authentication = require('./routes/Authentication');
 const Analysis = require('./routes/Analysis');
 const _else = require('./routes/else');
@@ -24,10 +25,18 @@ app.use('/Analysis', (req, res, next)=>{
     const bearerHeader = req.headers['x-auth-token'];
     if(typeof bearerHeader !== 'undefined'){
         req.token = bearerHeader.split(' ')[0];
+        jwt.verify(req.token,'WeAreAllIronMen',(err, authData)=>{
+            if(err){
+                res.status(403).json({location: "TokenVerify", message: err.message});
+            }
+            else{
+                req.userName = authData['username'];
+            }
+        });
         next();
     }
     else{
-        res.sendStatus(403).send( "Analysis: Un Authorized Token.");
+        res.status(403).send( "Analysis: Un Authorized Token.");
         next();
     }
 });

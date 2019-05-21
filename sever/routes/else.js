@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 var DButilsAzure = require('../DButils');
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs) todo
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs) 
 router.get('/getAllPOIs', (req, res) => {
     DButilsAzure.execQuery(`SELECT * FROM poi`)
         .then(async (response, err) => {
@@ -10,10 +10,10 @@ router.get('/getAllPOIs', (req, res) => {
                 res.status(400).json({message: err.message});
             else {
                 let answer = response;
-                for (let i in answer) {
-                    let poiID = await parseInt(response[i]['poiID']);
-                    let views = await parseInt(response[i]['views']) + 1;
-                    response[i]['views'] = views;
+                answer.forEach(async (response)=> {
+                    let poiID = await parseInt(response['poiID']);
+                    let views = await parseInt(response['views']) + 1;
+                    response['views'] = views;
                     DButilsAzure.execQuery(`UPDATE poi SET views = '${views}' where poiID = '${poiID}'`)
                         .then((response, err) => {
                             if (err)
@@ -22,7 +22,7 @@ router.get('/getAllPOIs', (req, res) => {
                                 res.status(200).json({POI: answer});
                             }
                         });
-                }
+                });
                 res.status(200).json({POIs: answer});
             }
 
@@ -32,9 +32,9 @@ router.get('/getAllPOIs', (req, res) => {
         });
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPOIbyID) todo
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPOIbyID) 
 router.get('/getPOIbyID/:poiID', (req, res) => {
-    let poiID = req.params.poiID;
+    let poiID = req.params['poiID'];
     DButilsAzure.execQuery(`SELECT * FROM poi WHERE poiID = '${poiID}'`)
         .then(async (response, err) => {
             if (!err) {
@@ -43,8 +43,9 @@ router.get('/getPOIbyID/:poiID', (req, res) => {
                 response[0]['views'] = views;
                 DButilsAzure.execQuery(`UPDATE poi SET views = '${views}' where poiID = '${poiID}'`)
                     .then((response, err) => {
-                        if (err)
+                        if (err) {
                             res.status(400).json({message: `Error in views`});
+                        }
                         else {
                             res.status(200).json({POI: answer});
                         }
@@ -56,10 +57,10 @@ router.get('/getPOIbyID/:poiID', (req, res) => {
         });
 });
 
-// test route to make sure everything is working (accessed at GET http://localhost:3000/else/getRandomPOI) todo
+// TODO - test route to make sure everything is working (accessed at GET http://localhost:3000/else/getRandomPOI) 
 router.get('/getRandomPOI/:POIsToShow/:minimalRank', (req, res) => {
-    let minimalRank = req.params.minimalRank;
-    let pois2show = req.params.POIsToShow;
+    let minimalRank = req.params['minimalRank'];
+    let pois2show = req.params['POIsToShow'];
     DButilsAzure.execQuery(`SELECT * FROM poi WHERE ranking >= '${minimalRank}'`)
         .then(async (response, err) => {
             if (err)
@@ -112,9 +113,9 @@ router.get('/getRandomPOI/:POIsToShow/:minimalRank', (req, res) => {
 
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllReviews) todo
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllReviews) 
 router.get('/getAllReviews/:poiID', (req, res) => {
-    const poiID = req.params.poiID;
+    const poiID = req.params['poiID'];
     DButilsAzure.execQuery(`SELECT * FROM reviews WHERE poiID = '${poiID}'`)
         .then((response, err) => {
             if (err)
@@ -130,10 +131,10 @@ router.get('/getAllReviews/:poiID', (req, res) => {
         });
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getReviews) todo
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/else/getReviews) 
 router.get('/getReviews/:numOfReviews/:poiID', (req, res) => {
-    const numOfReviews = req.params.numOfReviews;
-    const poiID = req.params.poiID;
+    const numOfReviews = req.params['numOfReviews'];
+    const poiID = req.params['poiID'];
     DButilsAzure.execQuery(`SELECT * FROM reviews WHERE poiID = '${poiID}' ORDER BY date DESC`)
         .then((response, err) => {
             if (err)
@@ -148,89 +149,6 @@ router.get('/getReviews/:numOfReviews/:poiID', (req, res) => {
             res.status(400).json({message: err.message});
         });
 });
-
-
-// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPoint) good
-// router.post('/getPoint', (req, res) => {
-//
-//     PointName = req.body.PointName;
-//     var i;
-//     let ID;
-//     let pName;
-//     let Imag;
-//     let Vnum;
-//     let rate;
-//     let des;
-//     let rev1;
-//     let rev2;
-//     DButilsAzure.execQuery(`SELECT * FROM dbo.Points WHERE PointName = '${PointName}'`)
-//         .then((response, err) => {
-//             if (err)
-//                 res.status(400).json({message: err.message});
-//             else {
-//                 ID = response[0].PointID;
-//                 pName = response[0].PointName;
-//                 Imag = response[0].Image;
-//                 Vnum = response[0].ViewNum;
-//                 rate = response[0].Rate;
-//                 des = response[0].Description;
-//             }
-//
-//         })
-//         .catch(function (err) {
-//             res.status(400).json({message: err.message});
-//         });
-//     DButilsAzure.execQuery(`SELECT TOP 2 * FROM dbo.Reviews WHERE PointName = '${PointName}' ORDER BY DateReview DESC`)
-//         .then((response, err) => {
-//             if (err)
-//                 res.status(400).json({message: err.message});
-//             else {
-//                 if (response.length > 1) {
-//                     onerev = response[0].Review;
-//                     oneDateReview = response[0].DateReview;
-//                     secondrev = response[1].Review;
-//                     secondDateReview = response[1].DateReview;
-//                     res.status(200).json({
-//                         PointName: pName,
-//                         Image: Imag,
-//                         NumberOfViews: Vnum,
-//                         Rate: rate,
-//                         Desrciption: des,
-//                         Review1: onerev,
-//                         DateOfReview1: oneDateReview,
-//                         Review2: secondrev,
-//                         DateOfReview2: secondDateReview
-//                     });
-//                 } else if (response.length === 1) {
-//                     onerev = response[0].Review;
-//                     oneDateReview = response[0].DateReview;
-//                     res.status(200).json({
-//                         PointName: pName,
-//                         Image: Imag,
-//                         NumberOfViews: Vnum,
-//                         Rate: rate,
-//                         Desrciption: des,
-//                         Review1: onerev,
-//                         DateOfReview1: oneDateReview
-//                     });
-//                 } else if (response.length === 0) {
-//                     res.status(200).json({
-//                         PointName: pName,
-//                         Image: Imag,
-//                         NumberOfViews: Vnum,
-//                         Rate: rate,
-//                         Desrciption: des
-//                     });
-//                 }
-//
-//             }
-//
-//         })
-//         .catch(function (err) {
-//             res.status(400).json({message: err.message});
-//         });
-// });
-
 
 module.exports = router;
 

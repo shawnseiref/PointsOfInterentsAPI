@@ -4,32 +4,63 @@ var DButilsAzure = require('../DButils');
 const jwt = require('jsonwebtoken');
 var dateTime = require('node-datetime');
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getFavoritePOIs) todo
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/getFavoritePOIs) 
 router.post('/getFavoritePOIs', (req, res) => {
-    let userName;
-    jwt.verify(req.token,'WeAreAllIronMen',(err, authData)=>{
-        if(err){
-            res.sendStatus(403).json({location: "TokenVerify"});
-        }
-        else{
-            userName = authData['username'];
-            DButilsAzure.execQuery(`SELECT * FROM favorites WHERE username = '${userName}'`)
-                .then((response, err) => {
-                    if(err)
-                        res.status(400).json({location: "favorites/then", message: err.message});
-                    else{
-                        res.status(200).json({response});
+    DButilsAzure.execQuery(`SELECT * FROM favorites WHERE username = '${req.userName}'`)
+        .then((response, err) => {
+            if(err)
+                res.status(400).json({location: "favorites/then", message: err.message});
+            else{
+                if (response.length<1)
+                    res.status(404).json({location: "favorites/else", message: "No Favorites Found"});
+                res.status(200).json({response});
 
-                    }
-                })
-                .catch(function(err) {
-                    res.status(400).json({location: "favorites/catch", message: err.message});
-                });
-        }
-    });
+            }
+        })
+        .catch(function(err) {
+            res.status(400).json({location: "favorites/catch", message: err.message});
+        });
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getTopRecPointsToUser) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/addFavoritePOI) 
+router.post('/addFavoritePOI', (req, res) => {
+    DButilsAzure.execQuery(`INSERT INTO favorites VALUES ('${req.userName}','${req.body['poiID']}','${req.body['position']}',GETDATE())`)
+        .then((response, err) => {
+            if(err)
+                res.status(400).json({location: "favorites/then", message: err.message});
+            else{
+                res.status(201).json({message: "User Favorite POI added!"});
+            }
+        })
+        .catch(function(err) {
+            if (err.message.startsWith("Violation of PRIMARY KEY constrain")) {
+                res.status(400).json({location: "favorites/catch/if", message: "Favorite POI already exists"});
+            } else {
+                res.status(400).json({location: "favorites/catch/else", message: err.message});
+            }
+        });
+});
+
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/DeleteFavoritePOI)
+router.post('/addFavoritePOI', (req, res) => {
+    DButilsAzure.execQuery(`INSERT INTO favorites VALUES ('${req.userName}','${req.body['poiID']}','${req.body['position']}',GETDATE())`)
+        .then((response, err) => {
+            if(err)
+                res.status(400).json({location: "favorites/then", message: err.message});
+            else{
+                res.status(201).json({message: "User Favorite POI added!"});
+            }
+        })
+        .catch(function(err) {
+            if (err.message.startsWith("Violation of PRIMARY KEY constrain")) {
+                res.status(400).json({location: "favorites/catch/if", message: "Favorite POI already exists"});
+            } else {
+                res.status(400).json({location: "favorites/catch/else", message: err.message});
+            }
+        });
+});
+
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getTopRecPointsToUser) good
 router.post('/getTopRecPointsToUser/', (req, res) => {
 
     let userName;
@@ -59,7 +90,7 @@ router.post('/getTopRecPointsToUser/', (req, res) => {
 
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getLastFavoritsPointsToUser) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getLastFavoritsPointsToUser) good
 router.post('/getLastFavoritsPointsToUser', (req, res) => {
     var userName;
 
@@ -96,7 +127,7 @@ router.post('/getLastFavoritsPointsToUser', (req, res) => {
         });
 });
 
-// test route to make sure everything is working (accessed at delete http://localhost:3000/analy/deleteFromFavorits) good
+// TODO - test route to make sure everything is working (accessed at delete http://localhost:3000/analy/deleteFromFavorits) good
 router.delete('/deleteFromFavorits', (req, res) => {
 
     let PointN = req.body.PointName;
@@ -156,7 +187,7 @@ router.delete('/deleteFromFavorits', (req, res) => {
 });
 
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/analy/getFavoritePoints) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/analy/getFavoritePoints) good
 router.post('/getFavoritePoints', (req, res) => {
     var userName;
     var answer = [];
@@ -190,7 +221,7 @@ router.post('/getFavoritePoints', (req, res) => {
         });
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/analy/counterOfFavoritePoints) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/analy/counterOfFavoritePoints) good
 router.post('/counterOfFavoritePoints', (req, res) => {
     var userName;
 
@@ -221,7 +252,7 @@ router.post('/counterOfFavoritePoints', (req, res) => {
 });
 
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/analy/rateForPoint) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/analy/rateForPoint) good
 router.post('/rateForPoint', (req, res) => {
     //var PointN = req.body.PointName;
     //var Rate = req.body.Rate;
@@ -264,7 +295,7 @@ router.post('/rateForPoint', (req, res) => {
 });
 
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/analy/reviewForPoint) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/analy/reviewForPoint) good
 router.post('/reviewForPoint', (req, res) => {
 
     var PointN = req.body.PointName;
@@ -300,7 +331,7 @@ router.post('/reviewForPoint', (req, res) => {
 
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/analy/getFavoritePointSorted) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/analy/getFavoritePointSorted) good
 router.post('/getFavoritePointSorted', (req, res) => {
 
     var userName;
@@ -336,7 +367,7 @@ router.post('/getFavoritePointSorted', (req, res) => {
 });
 
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/analy/UpdateUserFavoritList) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/analy/UpdateUserFavoritList) good
 router.put('/updateUserFavoritList', (req, res) => {
 
     var userName;
@@ -384,7 +415,7 @@ router.put('/updateUserFavoritList', (req, res) => {
 
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/analy/getUserOrderFavoritList) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/analy/getUserOrderFavoritList) good
 router.post('/getUserOrderFavoritList', (req, res) => {
     var userName;
     var answer = [];

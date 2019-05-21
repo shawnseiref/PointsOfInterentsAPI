@@ -4,7 +4,7 @@ const DButilsAzure = require('../DButils');
 const jwt = require('jsonwebtoken');
 
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/login) good
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/login) 
 router.post('/login', (req, res) => {
     let username = req.body['username'];
     let password = req.body['password'];
@@ -34,7 +34,7 @@ router.post('/login', (req, res) => {
 });
 
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/passwordRetrival) todo
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/passwordRetrival) 
 router.post('/passwordRetrival', (req, res) => {
     let username = req.params('username');
     // let question1 = req.params('question1');
@@ -64,7 +64,7 @@ function strigifyObjectList(objList, arg1) {
     return res;
 }
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/register) todo
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/register) 
 router.post('/register', function (req, res) {
     console.log("adding a new user");
     const username = req.body['username'];
@@ -129,7 +129,7 @@ router.post('/register', function (req, res) {
 });
 
 
-// test route to make sure everything is working (accessed at GET http://localhost:3000/Authentications/getCategories) todo
+// TODO - test route to make sure everything is working (accessed at GET http://localhost:3000/Authentications/getCategories) 
 router.get('/ParametersForRegistration', function (req, res) {
 
     DButilsAzure.execQuery(`SELECT * FROM categories`)
@@ -170,7 +170,7 @@ router.get('/ParametersForRegistration', function (req, res) {
 
 });
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/getUserQuestions) todo
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/getUserQuestions) 
 router.post('/getUserQuestions', ((req, res) => {
 
     DButilsAzure.execQuery(`SELECT * FROM user_qa WHERE username = '${req.body['username']}'`)
