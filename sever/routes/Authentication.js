@@ -13,7 +13,6 @@ router.post('/login', (req, res) => {
         .then(function (response) {
             if (response.length === 0) return res.status(404).json({message: "ERROR: User Not Found"});
             let passFromTable = response[0].password;
-            let user = response[0];
             if (password === passFromTable) {
                 jwt.sign({username: username}, 'WeAreAllIronMen', (err, token) => {
                     res.status(200).json({token});
