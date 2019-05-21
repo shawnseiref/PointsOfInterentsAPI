@@ -3,7 +3,6 @@
 
 const ConnectionPool = require('tedious-connection-pool');
 const Request = require('tedious').Request;
-const TYPES = require('tedious').TYPES;
 
 const poolConfig = {
     min: 2,
@@ -22,7 +21,7 @@ const connectionConfig = {
 //create the pool
 let pool = new ConnectionPool(poolConfig, connectionConfig);
 
-pool.on('error', function (err) {
+pool['on']('error', function (err) {
     if (err) {
         console.log(err);
 
@@ -47,7 +46,7 @@ exports.execQuery = function (query) {
                     reject(err);
                 }
                 console.log('connection on');
-                let dbReq = new Request(query, function (err, rowCount) {
+                let dbReq = new Request(query, function (err) {
                     if (err) {
                         console.log('Request ' + err);
                         reject(err);
@@ -61,8 +60,8 @@ exports.execQuery = function (query) {
                     });
                 });
                 dbReq.on('row', function (row) {
-                    var item = {};
-                    for (i = 0; i < row.length; i++) {
+                    let item = {};
+                    for (let i = 0; i < row.length; i++) {
                         item[properties[i]] = row[i].value;
                     }
                     ans.push(item);
@@ -75,7 +74,7 @@ exports.execQuery = function (query) {
                     resolve(ans);
 
                 });
-                connection.execSql(dbReq);
+                connection['execSql'](dbReq);
 
             });
         }

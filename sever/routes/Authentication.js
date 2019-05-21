@@ -8,9 +8,8 @@ const jwt = require('jsonwebtoken');
 router.post('/login', (req, res) => {
     let username = req.body['username'];
     let password = req.body['password'];
-
     DButilsAzure.execQuery(`SELECT * FROM Users WHERE username = '${username}'`)
-        .then(function (response) {
+        .then((response) => {
             if (response.length === 0) return res.status(404).json({message: "ERROR: User Not Found"});
             let passFromTable = response[0].password;
             if (password === passFromTable) {
@@ -23,7 +22,6 @@ router.post('/login', (req, res) => {
                     message: "ERROR: Incorrect password"
                 });
             }
-
         }, function () {
             console.log("Something went wrong");
             alert("The username or password is incorrect !! ");
