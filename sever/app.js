@@ -8,7 +8,8 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const Authentication = require('./routes/Authentication');
 const Analysis = require('./routes/Analysis');
-const _else = require('./routes/else');
+const Else = require('./routes/else');
+const Creation = require('./routes/Creation');
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -41,7 +42,8 @@ app.use('/Analysis', (req, res, next)=>{
 });
 
 app.use('/Analysis', Analysis);
-app.use('/else', _else);
+app.use('/else', Else);
+app.use('/Creation', Creation);
 
 let port = 3000;
 // START THE SERVER
