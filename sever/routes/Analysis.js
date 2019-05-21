@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-var DButilsAzure = require('../DButils');
-const jwt = require('jsonwebtoken');
-var dateTime = require('node-datetime');
+const DButilsAzure = require('../DButils');
 
 // TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/getFavoritePOIs) 
 router.post('/getFavoritePOIs', (req, res) => {
@@ -126,6 +124,46 @@ router.post('/addReview', (req, res) => {
                 res.status(400).json({location: "reviews/catch/else", message: err.message});
             }
         });
+});
+
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/addReview)
+router.post('/addReview', (req, res) => {
+    DButilsAzure.execQuery(`INSERT INTO reviews (poiID, username, description, ranking, date) VALUES ('${req.body['poiID']}', '${req['userName']}','${req.body['description']}', '${req.body['ranking']}',GETDATE())`)
+        .then((response, err) => {
+            if (err)
+                res.status(400).json({location: "reviews/then", message: err.message});
+            else {
+                res.status(201).json({message: "User Review of POI added!"});
+            }
+        })
+        .catch(function (err) {
+            if (err.message.startsWith("Violation of PRIMARY KEY constrain")) {
+                res.status(400).json({location: "reviews/catch/if", message: "Review POI already exists"});
+            } else {
+                res.status(400).json({location: "reviews/catch/else", message: err.message});
+            }
+        });
+});
+
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/updateUserOrder)
+router.put('/updateUserOrder', (req, res) => {
+    let userOrder = req.body['newOrder'], added = true;
+    for (let i = 0; i < userOrder.length; i++) {
+        DButilsAzure.execQuery(`UPDATE favorites SET position = ${i} WHERE userName = '${req['userName']}' AND poiID = '${userOrder[i]}'`)
+            .then((response, err) => {
+                if (err) {
+                    added = false;
+                    res.status(400).json({location: "favorites/then", message: err.message});
+                } else {
+                    res.status(201).json({message: "Position Set Successfully"});
+                }
+            })
+            .catch(function (err) {
+                added = false;
+                res.status(400).json({location: "favorites/catch", message: err.message});
+            });
+    }
+    if (!added) res.status(500).json({message: "Something Went Terribly Wrong..."});
 });
 
 module.exports = router;

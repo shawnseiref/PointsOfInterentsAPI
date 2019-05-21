@@ -24,7 +24,6 @@ let pool = new ConnectionPool(poolConfig, connectionConfig);
 pool['on']('error', function (err) {
     if (err) {
         console.log(err);
-
     }
 });
 console.log('pool connection on');
