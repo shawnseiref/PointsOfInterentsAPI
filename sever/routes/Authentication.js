@@ -85,22 +85,15 @@ router.post('/register', function (req, res) {
     const categories = req.body.categories;
 
     let categoryStrArr = strigifyObjectList(categories, username);
-    let categoryStr = categoryStrArr[0].substring(1);
-    for (let i = 1; i < categoryStrArr.length; i++) {
-        categoryStr = categoryStr + categoryStrArr[i];
-    }
-
-    //users[id]=user;
-    // const userStr = JSON.stringify(user);
-
-    DButilsAzure.execQuery(`INSERT INTO users VALUES ('${username}', '${password}','${firstName}','${lastName}','${city}','${country}','${email}')`)
-        .then((response, err) => {
-            if (err) {
-                res.status(400).json({
-                    message: err.message
-                });
-                return;
-            } else {
+    if (categoryStrArr.length < 2){
+        res.status(400).json({message: "Please insert at least 2 categories"});
+    } else {
+        let categoryStr = categoryStrArr[0].substring(1);
+        for (let i = 1; i < categoryStrArr.length; i++) {
+            categoryStr = categoryStr + categoryStrArr[i];
+        }
+        DButilsAzure.execQuery(`INSERT INTO users VALUES ('${username}', '${password}','${firstName}','${lastName}','${city}','${country}','${email}')`)
+            .then((response, err) => {
                 if (err) {
                     res.status(400).json({
                         message: err.message
@@ -109,114 +102,34 @@ router.post('/register', function (req, res) {
                     DButilsAzure.execQuery(`INSERT INTO user_categories (categoryName, username) VALUES ${categoryStr}`)
                         .then((response, err) => {
                             if (err) {
-                                res.status(400).json({message: err.message});
+                                DButilsAzure.execQuery(`DELETE FROM users WHERE username = '${username}'`);
+                                res.status(400).json({location: "user_categories/then", message: err.message});
                             } else {
                                 DButilsAzure.execQuery(`INSERT INTO user_qa (username,questionID1,answer1,questionID2,answer2) VALUES ('${username}','${question1}','${answer1}','${question2}','${answer2}')`)
-                                .then((response, err) => {
-                                    if (err) {
-                                        res.status(400).json({message: err.message});
-                                    } else {
-                                        res.status(201).json({message: "New User Added"})
-                                    }
-                                })
-                                .catch(function (err) {
-                                    res.status(400).json({message: err.message});
-                                });
+                                    .then((response, err) => {
+                                        if (err) {
+                                            DButilsAzure.execQuery(`DELETE FROM user_catagories WHERE username = '${username}'`);
+                                            res.status(400).json({location: "user_qa/then", message: err.message});
+                                        } else {
+                                            res.status(201).json({message: "New User Added"})
+                                        }
+                                    })
+                                    .catch(function (err) {
+                                        res.status(400).json({location: "user_qa/catch", message: err.message});
+                                    });
                             }
                         })
                         .catch(function (err) {
-                            res.status(400).json({message: err.message});
+                            res.status(400).json({location: "user_categories/catch", message: err.message});
                         });
                 }
-            }
-        })
+            })
 
-        .catch(function (err) {
-            res.status(400).json({message: err.message});
-        });
-
-    // DButilsAzure.execQuery(`INSERT INTO dbo.Users_Questions VALUES ('${user.username}', '${user.ansewer1}','${user.ansewer2}')`)
-    //     .then((response, err) => {
-    //         if (err) {
-    //             res.status(400).json({
-    //                 message: 'Something went wrong - Users_Questions Table'
-    //             });
-    //
-    //         }
-    //     })
-    //     .catch(function (err) {
-    //         res.status(400).json({message: 'Something went wrong - users Table'});
-    //     });
-    //
-    // // if (user.Category1 !== undefined) {
-    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.username}', '${user.Category1}')`)
-    // //         .then((response, err) => {
-    // //             if (err) {
-    // //                 res.status(400).json({
-    // //                     message: 'Something went wrong - Users_Categories Table'
-    // //                 });
-    // //             }
-    // //         })
-    // //         .catch(function (err) {
-    // //             res.status(400).json({message: 'Something went wrong - Users_Categories Table'});
-    // //         });
-    // // }
-    // //
-    // // if (user.Category2 !== undefined) {
-    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.username}', '${user.Category2}')`)
-    // //         .then((response, err) => {
-    // //             if (err) {
-    // //                 res.status(400).json({
-    // //                     message: 'Something went wrong - Users_Categories Table'
-    // //                 });
-    // //             } else {
-    // //                 res.status(200).json({
-    // //                     message: 'true'
-    // //                 });
-    // //             }
-    // //         })
-    // //         .catch(function (err) {
-    // //             res.status(400).json({message: 'Something went wrong - Users_Categories Table'});
-    // //         });
-    // // }
-    // //
-    // // if (user.Category3 !== undefined) {
-    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.username}', '${user.Category3}')`)
-    // //         .then((response, err) => {
-    // //             if (err) {
-    // //                 res.status(400).json({
-    // //                     message: 'Something went wrong - Users_Categories Table'
-    // //                 });
-    // //             } else {
-    // //                 res.status(200).json({
-    // //                     message: 'true'
-    // //                 });
-    // //             }
-    // //         })
-    // //         .catch(function (err) {
-    // //             res.status(400).json({message: 'Something went wrong - Users_Categories Table'});
-    // //         });
-    // // }
-    // //
-    // // if (user.Category4 !== undefined) {
-    // //     DButilsAzure.execQuery(`INSERT INTO dbo.Users_Categories VALUES ('${user.username}', '${user.Category4}')`)
-    // //         .then((response, err) => {
-    // //             if (err) {
-    // //                 res.status(400).json({
-    // //                     message: 'Something went wrong - Users_Categories Table'
-    // //                 });
-    // //             } else {
-    // //                 res.status(200).json({
-    // //                     message: 'true'
-    // //                 });
-    // //             }
-    // //         })
-    // //         .catch(function (err) {
-    // //             res.status(400).json({message: 'Something went wrong - Users_Categories Table'});
-    // //         });
-    // // }
-
-    console.log("user successfully added!")
+            .catch(function (err) {
+                res.status(400).json({message: err.message});
+            });
+        console.log("user successfully added!");
+    }
 });
 
 
@@ -226,42 +139,59 @@ router.get('/ParametersForRegistration', function (req, res) {
     DButilsAzure.execQuery(`SELECT * FROM categories`)
         .then((response, err) => {
             if (err)
-                res.status(400).json({message: err.message});
+                res.status(400).json({location: "categories/then1", message: err.message});
             else {
                 //let jsonObject = JSON.parse(response);
-                let oldResponse = response;
-                DButilsAzure.execQuery(`SELECT * FROM dbo.Countries`)
+                let oldestResponse = response;
+                DButilsAzure.execQuery(`SELECT * FROM countries`)
                     .then((response, err) => {
                         if (err)
-                            res.status(400).json({message: err.message});
+                            res.status(400).json({location: "countries/then1", message: err.message});
                         else {
-                            res.status(200).json({categories: oldResponse, countries: response});
+                            let oldResponse = response;
+                            DButilsAzure.execQuery(`SELECT * FROM questions`)
+                                .then((response, err) => {
+                                    if (err)
+                                        res.status(400).json({location: "questions/then1",message: err.message});
+                                    else {
+                                        res.status(200).json({categories: oldestResponse, countries: oldResponse, questions: response});
+                                    }
+                                })
+                                .catch(function (err) {
+                                    res.status(400).json({location: "questions/catch",message: err.message});
+                                });
                         }
                     })
+                    .catch(function (err) {
+                        res.status(400).json({location: "countries/catch",message: err.message});
+                    });
             }
 
         })
         .catch(function (err) {
-            res.status(400).json({message: err.message});
+            res.status(400).json({location: "categories/catch",message: err.message});
         });
 
 });
 
-// test route to make sure everything is working (accessed at GET http://localhost:3000/Authentications/getUserQuestions) todo
-router.get('/getUserQuestions', ((req, res) => {
-    let i;
-    DButilsAzure.execQuery(`SELECT * FROM questions`)
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/getUserQuestions) todo
+router.post('/getUserQuestions', ((req, res) => {
+
+    DButilsAzure.execQuery(`SELECT * FROM user_qa WHERE username = '${req.body['username']}'`)
         .then((response, err) => {
             if (err)
-                res.status(400).json({message: err.message});
+                res.status(400).json({location: "user_qa/then1", message: err.message});
             else {
-                const answer = JSON.stringify(response);
-                res.status(200).json({questions: answer});
+                if (response.length<1){
+                    res.status(404).json({location: "user_qa/then2", message: "username not found"});
+                } else {
+                    res.status(200).json({questions: response});
+                }
             }
 
         })
         .catch(function (err) {
-            res.status(400).json({message: err.message});
+            res.status(400).json({location: "user_qa/catch",message: err.message});
         });
 }));
 
