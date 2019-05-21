@@ -4,8 +4,32 @@ var DButilsAzure = require('../DButils');
 const jwt = require('jsonwebtoken');
 var dateTime = require('node-datetime');
 
-// test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getTopRecPointsToUser) good
+// test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getFavoritePOIs) todo
+router.post('/getFavoritePOIs', (req, res) => {
+    let userName;
+    jwt.verify(req.token,'WeAreAllIronMen',(err, authData)=>{
+        if(err){
+            res.sendStatus(403).json({location: "TokenVerify"});
+        }
+        else{
+            userName = authData['username'];
+            DButilsAzure.execQuery(`SELECT * FROM favorites WHERE username = '${userName}'`)
+                .then((response, err) => {
+                    if(err)
+                        res.status(400).json({location: "favorites/then", message: err.message});
+                    else{
+                        res.status(200).json({response});
 
+                    }
+                })
+                .catch(function(err) {
+                    res.status(400).json({location: "favorites/catch", message: err.message});
+                });
+        }
+    });
+});
+
+// test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getTopRecPointsToUser) good
 router.post('/getTopRecPointsToUser/', (req, res) => {
 
     let userName;
@@ -34,7 +58,6 @@ router.post('/getTopRecPointsToUser/', (req, res) => {
         });
 
 });
-
 
 // test route to make sure everything is working (accessed at POST http://localhost:3000/auth/getLastFavoritsPointsToUser) good
 router.post('/getLastFavoritsPointsToUser', (req, res) => {
@@ -70,39 +93,6 @@ router.post('/getLastFavoritsPointsToUser', (req, res) => {
         })
         .catch(function(err) {
             res.status(400).json({message: 'NULL'});
-        });
-});
-
-// test route to make sure everything is working (accessed at POST http://localhost:3000/auth/insertToFavorits) good
-router.post('/insertToFavorits', (req, res) => {
-
-    let PointN = req.body.PointName;
-
-    var userName;
-
-    jwt.verify(req.token,'secretkey',(err, authData)=>{
-        if(err){
-            res.sendStatus(403);
-        }
-        else{
-            var strUser = authData;
-            result = strUser.user["username"];
-            userName = result;
-        }
-    });
-    // maybe need to put ';' in the end of ths SQL
-    //after we change the tables we need to send the ordet too
-    DButilsAzure.execQuery(`INSERT INTO dbo.Users_Favorits (Username,PointName) VALUES ('${userName}','${PointN}')`)
-        .then((response, err) => {
-            if(err)
-                res.status(400).json({boolean: 'false'});
-            else{
-                res.status(200).json({ boolean :'true' });
-
-            }
-        })
-        .catch(function(err) {
-            res.status(400).json({message: 'false'});
         });
 });
 

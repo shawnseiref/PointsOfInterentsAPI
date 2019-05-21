@@ -18,22 +18,20 @@ app.use(bodyParser.json());
 
 //START
 app.use('/Authentication', Authentication);
-app.use('/Analysis', Analysis);
-app.use('/else', _else);
 
 //middleware
-app.use('/Analysis', function (req, res, next) {
-    const beareHeader = req.headers['authentication'];
-    if (typeof beareHeader !== 'undefined') {
-        const bearer = beareHeader.split(' ');
-        //get token from array
-        req.token = bearer[1];
+app.use('/Analysis', (req, res, next)=>{
+    const bearerHeader = req.headers['x-auth-token'];
+    if(typeof bearerHeader !== 'undefined'){
+        req.token = bearerHeader.split(' ')[0];
         next();
-    } else {
-        res.sendStatus(6);
+    }
+    else{
+        res.sendStatus(403).send( "Analysis: Un Authorized Token.");
         next();
     }
 });
+
 app.use('/Analysis/rateForPoint', function (req, res, next) {
     const PointN = req.body.PointName;
     const Rate = req.body.Rate;
@@ -66,6 +64,10 @@ app.use('/Analysis/rateForPoint', function (req, res, next) {
             next();
         });
 });
+
+
+app.use('/Analysis', Analysis);
+app.use('/else', _else);
 
 let port = 3000;
 // START THE SERVER

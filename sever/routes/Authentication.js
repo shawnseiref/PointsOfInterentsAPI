@@ -6,8 +6,8 @@ const jwt = require('jsonwebtoken');
 
 // test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/login) good
 router.post('/login', (req, res) => {
-    let username = req.body.username;
-    let password = req.body.password;
+    let username = req.body['username'];
+    let password = req.body['password'];
 
     DButilsAzure.execQuery(`SELECT * FROM Users WHERE username = '${username}'`)
         .then(function (response) {
@@ -16,9 +16,7 @@ router.post('/login', (req, res) => {
             let user = response[0];
             if (password === passFromTable) {
                 jwt.sign({username: username}, 'WeAreAllIronMen', (err, token) => {
-                    res.status(200).json({
-                        token
-                    });
+                    res.status(200).json({token});
                 });
                 // console.log(`logged in to '${username}' with password: '${password}'`)
             } else {
@@ -69,20 +67,18 @@ function strigifyObjectList(objList, arg1) {
 // test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/register) todo
 router.post('/register', function (req, res) {
     console.log("adding a new user");
-    const user = {};
-
-    const username = req.body.username;
-    const password = req.body.password;
-    const firstName = req.body.firstName;
-    const lastName = req.body.lastName;
-    const city = req.body.city;
-    const country = req.body.country;
-    const email = req.body.email;
-    const question1 = req.body.question1;
-    const question2 = req.body.question2;
-    const answer1 = req.body.answer1;
-    const answer2 = req.body.answer2;
-    const categories = req.body.categories;
+    const username = req.body['username'];
+    const password = req.body['password'];
+    const firstName = req.body['firstName'];
+    const lastName = req.body['lastName'];
+    const city = req.body['city'];
+    const country = req.body['country'];
+    const email = req.body['email'];
+    const question1 = req.body['question1'];
+    const question2 = req.body['question2'];
+    const answer1 = req.body['answer1'];
+    const answer2 = req.body['answer2'];
+    const categories = req.body['categories'];
 
     let categoryStrArr = strigifyObjectList(categories, username);
     if (categoryStrArr.length < 2){
