@@ -33,18 +33,19 @@ router.post('/login', (req, res) => {
 
 // TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/passwordRetrival) 
 router.post('/passwordRetrival', (req, res) => {
-    let username = req.params('username');
-    // let question1 = req.params('question1');
-    // let question2 = req.params('question2');
-    // let ansewer1 = req.params('ansewer1');
-    // let ansewer2 = req.params('ansewer2');
-
-    DButilsAzure.execQuery(`SELECT Password FROM dbo.Users WHERE username = '${username}'`)
+    const ans1 = req.body['answer1'];
+    const ans2 = req.body['answer2'];
+    DButilsAzure.execQuery(`SELECT * FROM user_qa WHERE username = '${req['userName']}'`)
         .then((response, err) => {
-            if (err) res.status(400).json({message: err.message});
-            else res.status(200).json({
-                ThePass: response[0].password
-            });
+            if (err) {
+                res.status(400).json({message: err.message});
+            } else {
+                if(ans1==response['answer1'] && ans2==response['answer2']){
+                    res.status(200).json({ThePass: response[0].password});
+                } else{
+                    res.status(403).json({message: "Your answer is incorrect"})
+                }
+            }
         })
         .catch(function (err) {
             res.status(400).json({message: err.message});
@@ -78,7 +79,7 @@ router.post('/register', function (req, res) {
     const categories = req.body['categories'];
 
     let categoryStrArr = strigifyObjectList(categories, username);
-    if (categoryStrArr.length < 2){
+    if (categoryStrArr.length < 2) {
         res.status(400).json({message: "Please insert at least 2 categories"});
     } else {
         let categoryStr = categoryStrArr[0].substring(1);
@@ -145,24 +146,28 @@ router.get('/ParametersForRegistration', function (req, res) {
                             DButilsAzure.execQuery(`SELECT * FROM questions`)
                                 .then((response, err) => {
                                     if (err)
-                                        res.status(400).json({location: "questions/then1",message: err.message});
+                                        res.status(400).json({location: "questions/then1", message: err.message});
                                     else {
-                                        res.status(200).json({categories: oldestResponse, countries: oldResponse, questions: response});
+                                        res.status(200).json({
+                                            categories: oldestResponse,
+                                            countries: oldResponse,
+                                            questions: response
+                                        });
                                     }
                                 })
                                 .catch(function (err) {
-                                    res.status(400).json({location: "questions/catch",message: err.message});
+                                    res.status(400).json({location: "questions/catch", message: err.message});
                                 });
                         }
                     })
                     .catch(function (err) {
-                        res.status(400).json({location: "countries/catch",message: err.message});
+                        res.status(400).json({location: "countries/catch", message: err.message});
                     });
             }
 
         })
         .catch(function (err) {
-            res.status(400).json({location: "categories/catch",message: err.message});
+            res.status(400).json({location: "categories/catch", message: err.message});
         });
 
 });
@@ -175,7 +180,7 @@ router.post('/getUserQuestions', ((req, res) => {
             if (err)
                 res.status(400).json({location: "user_qa/then1", message: err.message});
             else {
-                if (response.length<1){
+                if (response.length < 1) {
                     res.status(404).json({location: "user_qa/then2", message: "username not found"});
                 } else {
                     res.status(200).json({questions: response});
@@ -184,7 +189,7 @@ router.post('/getUserQuestions', ((req, res) => {
 
         })
         .catch(function (err) {
-            res.status(400).json({location: "user_qa/catch",message: err.message});
+            res.status(400).json({location: "user_qa/catch", message: err.message});
         });
 }));
 

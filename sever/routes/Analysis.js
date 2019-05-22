@@ -62,7 +62,7 @@ router.post('/addFavoritePOI', (req, res) => {
 });
 
 // TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/deleteFavoritePOI)
-router.post('/deleteFavoritePOI', (req, res) => {
+router.delete('/deleteFavoritePOI', (req, res) => {
     DButilsAzure.execQuery(`DELETE FROM favorites WHERE username = '${req['userName']}' AND poiID = ${req.body['poiID']}`)
         .then((response, err) => {
             if (err)
