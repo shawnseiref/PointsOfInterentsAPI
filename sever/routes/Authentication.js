@@ -32,10 +32,11 @@ router.post('/login', (req, res) => {
 
 
 // TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/passwordRetrival) 
-router.post('/passwordRetrival', (req, res) => {
+router.post('/passwordRetrieval', (req, res) => {
+    const username = req.body['username'];
     const ans1 = req.body['answer1'];
     const ans2 = req.body['answer2'];
-    DButilsAzure.execQuery(`SELECT * FROM user_qa WHERE username = '${req['userName']}'`)
+    DButilsAzure.execQuery(`SELECT * FROM user_qa WHERE username = '${username}'`)
         .then((response, err) => {
             if (err) {
                 res.status(400).json({message: err.message});
