@@ -155,7 +155,7 @@ router.put('/updateUserOrder', (req, res) => {
                     added = false;
                     res.status(400).json({location: "favorites/then", message: err.message});
                 } else {
-                    res.status(201).json({message: "Position Set Successfully"});
+                    res.status(200).json({message: "Position Set Successfully"});
                 }
             })
             .catch(function (err) {
@@ -166,9 +166,53 @@ router.put('/updateUserOrder', (req, res) => {
     if (!added) res.status(500).json({message: "Something Went Terribly Wrong..."});
 });
 
+//
+// ('a',3,2,GETDATE()),
+// ('a',4,3,GETDATE()),
+// ('a',5,4,GETDATE()),
+// ('a',6,5,GETDATE()),
+// ('a',7,3,GETDATE()),
+// ('a',8,3,GETDATE()),
+// ('a',9,4,GETDATE()),
+// ('a',10,5,GETDATE()),
+// ('a',11,2,GETDATE())
+//
 
 
-
+// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/getTwoPOIsByCategories)
+router.post('/getTwoPOIsByCategories', (req, res) => {
+        DButilsAzure.execQuery(`SELECT p.*, pc.categoryName
+FROM poi p JOIN poi_category pc ON p.poiID=pc.poiID
+JOIN (SELECT MAX(p.ranking) AS maxRank , u.categoryName FROM poi p
+         JOIN poi_category pc ON p.poiID = pc.poiID
+                  JOIN user_categories u ON u.categoryName = pc.categoryName 
+        WHERE u.username = '${req['userName']}'
+GROUP BY u.categoryName) AS j
+  ON p.ranking=j.maxRank AND pc.categoryName=j.categoryName
+  ORDER BY ranking DESC
+`)
+            .then((response, err) => {
+                if (err) {
+                    res.status(400).json({location: "TOP2/then", message: err.message});
+                } else {
+                    let result = [];
+                    result.push(response[0]);
+                    for (let i = 1; i < response.length; i++) {
+                        if (result[0]['poiID']!==response[i]['poiID']){
+                            result[1] = response[i];
+                            break;
+                        } else if (i===response.length-1){
+                            result[1] = response[1];
+                            break;
+                        }
+                    }
+                    res.status(200).json({POIs: result});
+                }
+            })
+            .catch(function (err) {
+                res.status(400).json({location: "TOP2/catch", message: err.message});
+            });
+});
 
 
 module.exports = router;

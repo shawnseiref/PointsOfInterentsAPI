@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-var DButilsAzure = require('../DButils');
+const DButilsAzure = require('../DButils');
 
 // TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs) 
 router.get('/getAllPOIs', (req, res) => {

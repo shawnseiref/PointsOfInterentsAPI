@@ -4,6 +4,21 @@ const DButilsAzure = require('../DButils');
 
 
 router.post('/createDB', (req, res) => {
+    DButilsAzure.execQuery(`CREATE TABLE countries(countryID int  PRIMARY KEY,countryName VARCHAR(30))`)
+        .then((response, err) => {
+            if (err)
+                res.status(400).json({location: "counties/then", message: err.message});
+            else {
+                res.status(201).json({message: "Country Added!"});
+            }
+        })
+        .catch(function (err) {
+            if (err.message.startsWith("Violation of PRIMARY KEY constrain")) {
+                res.status(400).json({location: "counties/catch/if", message: "Country Name exists"});
+            } else {
+                res.status(400).json({location: "counties/catch/else", message: err.message});
+            }
+        });
     for (let i = 0, countries = req.body['countries']; i < countries.length; i++) {
         DButilsAzure.execQuery(`INSERT INTO countries VALUES ('${countries[i][0]}','${countries[i][1]}')`)
             .then((response, err) => {
