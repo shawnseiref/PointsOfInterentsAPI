@@ -4,7 +4,7 @@ const DButilsAzure = require('../DButils');
 const jwt = require('jsonwebtoken');
 
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/login) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/login) 
 router.post('/login', (req, res) => {
     let username = req.body['username'];
     let password = req.body['password'];
@@ -31,7 +31,7 @@ router.post('/login', (req, res) => {
 });
 
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/passwordRetrival) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/passwordRetrival) 
 router.post('/passwordRetrieval', (req, res) => {
     const username = req.body['username'];
     const ans1 = req.body['answer1'];
@@ -41,8 +41,18 @@ router.post('/passwordRetrieval', (req, res) => {
             if (err) {
                 res.status(400).json({message: err.message});
             } else {
-                if(ans1==response['answer1'] && ans2==response['answer2']){
-                    res.status(200).json({ThePass: response[0].password});
+                if(ans1==response[0]['answer1'] && ans2==response[0]['answer2']){
+                    DButilsAzure.execQuery(`SELECT password FROM users WHERE username = '${username}'`)
+                        .then((response, err) => {
+                            if (err) {
+                                res.status(400).json({message: err.message});
+                            } else {
+                                res.status(200).json( response[0]);
+                            }
+                        })
+                        .catch(function (err) {
+                            res.status(400).json({message: err.message});
+                        });
                 } else{
                     res.status(403).json({message: "Your answer is incorrect"})
                 }
@@ -63,7 +73,7 @@ function strigifyObjectList(objList, arg1) {
     return res;
 }
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/register) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/register) 
 router.post('/register', function (req, res) {
     console.log("adding a new user");
     const username = req.body['username'];
@@ -97,38 +107,40 @@ router.post('/register', function (req, res) {
                     DButilsAzure.execQuery(`INSERT INTO user_categories (categoryName, username) VALUES ${categoryStr}`)
                         .then((response, err) => {
                             if (err) {
-                                DButilsAzure.execQuery(`DELETE FROM users WHERE username = '${username}'`);
+                                DButilsAzure.execQuery(`DELETE FROM users WHERE username='${username}'`);
                                 res.status(400).json({location: "user_categories/then", message: err.message});
                             } else {
-                                DButilsAzure.execQuery(`INSERT INTO user_qa (username,questionID1,answer1,questionID2,answer2) VALUES ('${username}','${question1}','${answer1}','${question2}','${answer2}')`)
+                                DButilsAzure.execQuery(`INSERT INTO user_qa (username,question1,answer1,question2,answer2) VALUES ('${username}','${question1}','${answer1}','${question2}','${answer2}')`)
                                     .then((response, err) => {
                                         if (err) {
-                                            DButilsAzure.execQuery(`DELETE FROM user_catagories WHERE username = '${username}'`);
+                                            DButilsAzure.execQuery(`DELETE FROM user_categories WHERE username='${username}'`);
+                                            DButilsAzure.execQuery(`DELETE FROM users WHERE username='${username}'`);
                                             res.status(400).json({location: "user_qa/then", message: err.message});
                                         } else {
                                             res.status(201).json({message: "New User Added"})
                                         }
                                     })
                                     .catch(function (err) {
+                                        DButilsAzure.execQuery(`DELETE FROM user_categories WHERE username='${username}'`);
+                                        DButilsAzure.execQuery(`DELETE FROM users WHERE username='${username}'`);
                                         res.status(400).json({location: "user_qa/catch", message: err.message});
                                     });
                             }
                         })
                         .catch(function (err) {
+                            DButilsAzure.execQuery(`DELETE FROM users WHERE username='${username}'`);
                             res.status(400).json({location: "user_categories/catch", message: err.message});
                         });
                 }
             })
-
             .catch(function (err) {
                 res.status(400).json({message: err.message});
             });
-        console.log("user successfully added!");
     }
 });
 
 
-// TODO - test route to make sure everything is working (accessed at GET http://localhost:3000/Authentications/getCategories) 
+// test route to make sure everything is working (accessed at GET http://localhost:3000/Authentications/getCategories) 
 router.get('/ParametersForRegistration', function (req, res) {
 
     DButilsAzure.execQuery(`SELECT * FROM categories`)
@@ -173,7 +185,7 @@ router.get('/ParametersForRegistration', function (req, res) {
 
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/getUserQuestions) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/getUserQuestions) 
 router.post('/getUserQuestions', ((req, res) => {
 
     DButilsAzure.execQuery(`SELECT * FROM user_qa WHERE username = '${req.body['username']}'`)

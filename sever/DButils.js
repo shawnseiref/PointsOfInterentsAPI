@@ -10,7 +10,6 @@ const poolConfig = {
     log: true
 };
 
-// TODO: edit this
 const connectionConfig = {
     userName: 'p',
     password: '1Q2w3e4r',

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const DButilsAzure = require('../DButils');
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/getFavoritePOIs) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/getFavoritePOIs) 
 router.post('/getFavoritePOIs', (req, res) => {
     DButilsAzure.execQuery(`SELECT * FROM favorites WHERE username = '${req['userName']}' ORDER BY position`)
         .then((response, err) => {
@@ -19,7 +19,7 @@ router.post('/getFavoritePOIs', (req, res) => {
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/addFavoritePOI) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/addFavoritePOI) 
 router.post('/addFavoritePOI', (req, res) => {
     DButilsAzure.execQuery(`SELECT MAX(position) FROM favorites WHERE username = '${req['userName']}'GROUP BY username`)
         .then((response, err) => {
@@ -61,23 +61,28 @@ router.post('/addFavoritePOI', (req, res) => {
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/deleteFavoritePOI)
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/deleteFavoritePOI)
 router.delete('/deleteFavoritePOI', (req, res) => {
     DButilsAzure.execQuery(`DELETE FROM favorites WHERE username = '${req['userName']}' AND poiID = ${req.body['poiID']}`)
         .then((response, err) => {
             if (err)
                 res.status(404).json({location: "favorites/then", message: err.message});
             else {
-                if (res)
+                // if (response.rowsAffected>0){
                     res.status(200).json({message: "User Favorite POI Removed!"});
+                // } else {
+                //     res.status(404).json({message: "NO POI Was found with ID = "+req.body['poiID']});
+                // }
+
             }
         })
+
         .catch(function (err) {
             res.status(400).json({location: "favorites/catch", message: err.message});
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/countFavorites)
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/countFavorites)
 router.post('/countFavorites', (req, res) => {
     DButilsAzure.execQuery(`SELECT * FROM favorites WHERE username = '${req['userName']}'`)
         .then((response, err) => {
@@ -92,7 +97,7 @@ router.post('/countFavorites', (req, res) => {
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/getLastUsedPOIs)
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/getLastUsedPOIs)
 router.post('/getLastUsedPOIs', (req, res) => {
     DButilsAzure.execQuery(`SELECT TOP ${req.body['numOfPOIs']} * FROM favorites INNER JOIN poi ON favorites.poiID = poi.poiID  WHERE Username = '${req['userName']}'  ORDER BY date DESC`)
         .then((response, err) => {
@@ -107,7 +112,7 @@ router.post('/getLastUsedPOIs', (req, res) => {
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/addReview)
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/addReview)
 router.post('/addReview', (req, res) => {
     DButilsAzure.execQuery(`INSERT INTO reviews (poiID, username, description, ranking, date) VALUES ('${req.body['poiID']}', '${req['userName']}','${req.body['description']}', '${req.body['ranking']}',GETDATE())`)
         .then((response, err) => {
@@ -126,7 +131,7 @@ router.post('/addReview', (req, res) => {
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/addReview)
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/addReview)
 router.post('/addReview', (req, res) => {
     DButilsAzure.execQuery(`INSERT INTO reviews (poiID, username, description, ranking, date) VALUES ('${req.body['poiID']}', '${req['userName']}','${req.body['description']}', '${req.body['ranking']}',GETDATE())`)
         .then((response, err) => {
@@ -145,7 +150,7 @@ router.post('/addReview', (req, res) => {
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/updateUserOrder)
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/updateUserOrder)
 router.put('/updateUserOrder', (req, res) => {
     let userOrder = req.body['newOrder'], added = true;
     for (let i = 0; i < userOrder.length; i++) {
@@ -179,7 +184,7 @@ router.put('/updateUserOrder', (req, res) => {
 //
 
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/getTwoPOIsByCategories)
+// test route to make sure everything is working (accessed at POST http://localhost:3000/Analysis/getTwoPOIsByCategories)
 router.post('/getTwoPOIsByCategories', (req, res) => {
         DButilsAzure.execQuery(`SELECT p.*, pc.categoryName
 FROM poi p JOIN poi_category pc ON p.poiID=pc.poiID

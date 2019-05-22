@@ -2,28 +2,14 @@ const express = require('express');
 const router = express.Router();
 const DButilsAzure = require('../DButils');
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs) 
 router.get('/getAllPOIs', (req, res) => {
     DButilsAzure.execQuery(`SELECT * FROM poi`)
         .then(async (response, err) => {
             if (err)
                 res.status(400).json({message: err.message});
             else {
-                let answer = response;
-                answer.forEach(async (response)=> {
-                    let poiID = await parseInt(response['poiID']);
-                    let views = await parseInt(response['views']) + 1;
-                    response['views'] = views;
-                    DButilsAzure.execQuery(`UPDATE poi SET views = '${views}' where poiID = '${poiID}'`)
-                        .then((response, err) => {
-                            if (err)
-                                res.status(400).json({message: `Error in views`});
-                            else {
-                                res.status(200).json({POI: answer});
-                            }
-                        });
-                });
-                res.status(200).json({POIs: answer});
+                res.status(200).json({POIs: response});
             }
 
         })
@@ -32,7 +18,7 @@ router.get('/getAllPOIs', (req, res) => {
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPOIbyID) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPOIbyID) 
 router.get('/getPOIbyID/:poiID', (req, res) => {
     let poiID = req.params['poiID'];
     DButilsAzure.execQuery(`SELECT * FROM poi WHERE poiID = '${poiID}'`)
@@ -44,20 +30,28 @@ router.get('/getPOIbyID/:poiID', (req, res) => {
                 DButilsAzure.execQuery(`UPDATE poi SET views = '${views}' where poiID = '${poiID}'`)
                     .then((response, err) => {
                         if (err) {
-                            res.status(400).json({message: `Error in views`});
-                        }
-                        else {
+                            res.status(400).json({location: "poi/update/then", message: `Error in views`});
+                        } else {
                             res.status(200).json({POI: answer});
                         }
+                    })
+                    .catch(function (err) {
+                        res.status(400).json({location: "poi/update/catch", message: err.message});
+
                     });
             }
         })
         .catch(function (err) {
-            res.status(400).json({message: err.message});
+            if (err.message.startsWith("Cannot read property \'views\' of undefined")) {
+                res.status(400).json({location: "poi/update/catch", message: "Invalid POI ID.."});
+
+            } else {
+                res.status(400).json({location: "poi/select/catch", message: err.message});
+            }
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at GET http://localhost:3000/else/getRandomPOI) 
+// test route to make sure everything is working (accessed at GET http://localhost:3000/else/getRandomPOI) 
 router.get('/getRandomPOI/:POIsToShow/:minimalRank', (req, res) => {
     let minimalRank = req.params['minimalRank'];
     let pois2show = req.params['POIsToShow'];
@@ -113,13 +107,13 @@ router.get('/getRandomPOI/:POIsToShow/:minimalRank', (req, res) => {
 
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllReviews) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllReviews) 
 router.get('/getAllReviews/:poiID', (req, res) => {
     const poiID = req.params['poiID'];
     DButilsAzure.execQuery(`SELECT * FROM reviews WHERE poiID = '${poiID}'`)
         .then((response, err) => {
             if (err)
-                res.status(400).json({message: err.message});
+                res.status(400).json({location: "reviews/then", message: err.message});
             else {
 
                 res.status(200).json({Reviews: response});
@@ -127,26 +121,26 @@ router.get('/getAllReviews/:poiID', (req, res) => {
 
         })
         .catch(function (err) {
-            res.status(400).json({message: err.message});
+            res.status(400).json({location: "reviews/catch", message: err.message});
         });
 });
 
-// TODO - test route to make sure everything is working (accessed at POST http://localhost:3000/else/getReviews) 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getReviews) 
 router.get('/getReviews/:numOfReviews/:poiID', (req, res) => {
     const numOfReviews = req.params['numOfReviews'];
     const poiID = req.params['poiID'];
     DButilsAzure.execQuery(`SELECT * FROM reviews WHERE poiID = '${poiID}' ORDER BY date DESC`)
         .then((response, err) => {
             if (err)
-                res.status(400).json({message: err.message});
+                res.status(400).json({location: "reviews/then", message: err.message});
             else {
 
-                res.status(200).json({Reviews: response.slice(0,numOfReviews)});
+                res.status(200).json({Reviews: response.slice(0, numOfReviews)});
             }
 
         })
         .catch(function (err) {
-            res.status(400).json({message: err.message});
+            res.status(400).json({location: "reviews/catch", message: err.message});
         });
 });
 
