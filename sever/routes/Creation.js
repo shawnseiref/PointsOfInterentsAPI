@@ -29,7 +29,7 @@ router.post('/createDB', (req, res) => {
                     okSoFar = false;
                     res.status(400).json({location: "counties/then", message: err.message});
                 } else {
-                    if (okSoFar === true && i===countries.length-1) {
+                    if (okSoFar === true && i === countries.length - 1) {
                         res.status(200).json({message: "ALL GOOD :) "})
                     }
                 }
@@ -86,6 +86,57 @@ router.post('/WriteReviews', (req, res) => {
                 res.status(400).json({location: "Review/catch/if", message: "Review Name exists"});
             } else {
                 res.status(400).json({location: "Review/catch/else", message: err.message});
+            }
+        });
+});
+
+
+router.post('/printToCsv', (req, res) => {
+    let okSoFar = false;
+    DButilsAzure.execQuery(`SELECT * FROM ${req.body['name']}`)
+        .then((response, err) => {
+            if (err) {
+                okSoFar = false;
+                res.status(400).json({location: "counties/then", message: err.message});
+            } else {
+                okSoFar = true;
+                const csvjson = require('csvjson');
+                const readFile = require('fs').readFile;
+                const writeFile = require('fs').writeFile;
+
+                const csvData = csvjson.toCSV(response, {
+                    headers: 'key'
+                });
+                writeFile('./resources/csvs/' + req.body['name'] + '.csv', csvData, (err) => {
+                    if (err) {
+                        console.log(err); // Do something to handle the error or just throw it
+                        throw new Error(err);
+                    }
+                    console.log('Success!');
+                });
+                console.log('The CSV file was written successfully');
+                res.sendStatus(200);
+
+
+                //
+                // const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+                // const csvWriter = createObjectCsvWriter({
+                //     //resources/csvs/poi.csv
+                //     path: './resources/csvs/'+req.body['name']+'.csv',
+                // });
+                // let answer = response;
+                // csvWriter
+                //     .writeRecords(answer.array)
+                //     .then(()=> {console.log('The CSV file was written successfully');res.sendStatus(200)})
+                //     .catch((err)=>res.status(500).json({message: err.message}));
+            }
+        })
+        .catch(function (err) {
+            okSoFar = false;
+            if (err.message.startsWith("Violation of PRIMARY KEY constrain")) {
+                res.status(400).json({location: "counties/catch/if", message: "Country Name exists"});
+            } else {
+                res.status(400).json({location: "counties/catch/else", message: err.message});
             }
         });
 });
