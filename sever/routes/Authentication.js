@@ -18,7 +18,7 @@ router.post('/login', (req, res) => {
                 });
                 // console.log(`logged in to '${username}' with password: '${password}'`)
             } else {
-                res.status(500).json({
+                res.status(400).json({
                     message: "ERROR: Incorrect password"
                 });
             }
@@ -188,7 +188,7 @@ router.get('/ParametersForRegistration', function (req, res) {
 // test route to make sure everything is working (accessed at POST http://localhost:3000/Authentications/getUserQuestions) 
 router.post('/getUserQuestions', ((req, res) => {
 
-    DButilsAzure.execQuery(`SELECT * FROM user_qa WHERE username = '${req.body['username']}'`)
+    DButilsAzure.execQuery(`SELECT username, question1, question2 FROM user_qa WHERE username = '${req.body['username']}'`)
         .then((response, err) => {
             if (err)
                 res.status(400).json({location: "user_qa/then1", message: err.message});
