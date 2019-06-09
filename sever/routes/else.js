@@ -18,6 +18,39 @@ router.get('/getAllPOIs', (req, res) => {
         });
 });
 
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs)
+router.get('/getAllPOIsByCategory', (req, res) => {
+    let category = req.body['category'];
+    DButilsAzure.execQuery(`SELECT p.* FROM poi p JOIN poi_category pc on p.poiID = pc.poiID WHERE categoryName = '${category}' ORDER BY categoryName`)
+        .then(async (response, err) => {
+            if (err)
+                res.status(400).json({message: err.message});
+            else {
+                res.status(200).json({POIs: response});
+            }
+
+        })
+        .catch(function (err) {
+            res.status(400).json({message: err.message});
+        });
+});
+
+// test route to make sure everything is working (accessed at POST http://localhost:3000/else/getAllPOIs)
+router.get('/getAllPOIsByCategories', (req, res) => {
+    DButilsAzure.execQuery(`SELECT categoryName, p.* FROM poi p JOIN poi_category pc on p.poiID = pc.poiID ORDER BY categoryName`)
+        .then(async (response, err) => {
+            if (err)
+                res.status(400).json({message: err.message});
+            else {
+                res.status(200).json({POIs: response});
+            }
+
+        })
+        .catch(function (err) {
+            res.status(400).json({message: err.message});
+        });
+});
+
 // test route to make sure everything is working (accessed at POST http://localhost:3000/else/getPOIbyID) 
 router.get('/getPOIbyID/:poiID', (req, res) => {
     let poiID = req.params['poiID'];
